@@ -1,0 +1,99 @@
+.logopen <file>
+.shell 
+
+捕获c++异常（throw）
+sxe eh
+
+显示栈中局部变量
+dx Debugger.Sessions[0].Processes[44360].Threads[7688].Stack.Frames[2].SwitchTo();dv /t /v
+
+详细显示symbol load信息
+!sym noisy
+
+.shell -ci ".echo D:\\workspace" pwsh -c "ls $input"
+.shell -ci ".echo D:\\workspace" pwsh -c "$input | select-string a"
+.shell -ci "dx -r 4 @$peb" pwsh -c "$input | select-string -Context 3,3 -NoEmphasis -Pattern CommandLine"
+.symfix+ D:\symbols
+
+-o表示也debug子进程
+cdb -o .\t1.exe clang
+.lines
+bp `t1.cpp:37`
+
+> Get-Alias -Definition ForEach-Object
+CommandType     Name                                               Version    Source
+-----------     ----                                               -------    ------
+Alias           % -> ForEach-Object
+Alias           foreach -> ForEach-Object
+
+Unix系统调用可以被信号中断。
+System calls can be interrupted. System calls such as read, wait, and accept
+that can potentially block the process for a long period of time are called
+slow system calls. On some older versions of Unix, slow system calls that are
+interrupted when a handler catches a signal do not resume when the signal
+handler returns but instead return immediately to the user with an error
+condition and errno set to EINTR. On these systems, programmers must
+include code that manually restarts interrupted system calls.
+
+进程调用信号处理函数的时刻：该进程从内核态转换到用户态的时刻。
+Receiving Signals
+When the kernel switches a process p from kernel mode to user mode (e.g.,
+returning from a system call or completing a context switch), it checks the set of
+unblocked pending signals (pending & ~blocked) for p. If this set is empty (the
+usual case), then the kernel passes control to the next instruction (Inext) in the
+logical control flow of p. However, if the set is nonempty, then the kernel chooses
+some signal k in the set (typically the smallest k) and forces p to receive signal
+k. The receipt of the signal triggers some action by the process. Once the process
+completes the action, then control passes back to the next instruction (Inext) in the
+logical control flow of p. Each signal type has a predefined default action, which
+is one of the following:
+. The process terminates.
+. The process terminates and dumps core.
+. The process stops (suspends) until restarted by a SIGCONT signal.
+. The process ignores the signal.
+
+csapp 8.2.5 Context Switches
+  A context switch can occur while the kernel is executing a system call on behalf
+of the user. If the system call blocks because it is waiting for some event to occur,
+then the kernel can put the current process to sleep and switch to another process.
+For example, if a read system call requires a disk access, the kernel can opt to
+perform a context switch and run another process instead of waiting for the data
+to arrive from the disk. Another example is the sleep system call, which is an
+explicit request to put the calling process to sleep. In general, even if a system
+call does not block, the kernel can decide to perform a context switch rather than
+return control to the calling process.
+  A context switch can also occur as a result of an interrupt. For example, all
+systems have some mechanism for generating periodic timer interrupts, typically
+every 1 ms or 10 ms. Each time a timer interrupt occurs, the kernel can decide that
+the current process has run long enough and switch to a new process.
+
+$ strace -v -s 1024 -o log.txt -e execve -f cov-build -c tmp/config.xml --dir tmp/ir gcc -c empty.c
+
+execve 不会 flush buffer
+
+printf("\n"); 不一定会 flush buffer
+At program startup, three text streams are predeﬁned and need not be opened explicitly — standard input (for reading conventional input), standard output (for writing conventional output), and standard error (for writing diagnostic output). As initially opened, the standard error stream is not fully buffered; the standard input and standard output streams are fully buffered if and only if the stream can be determined not to refer to an interactive device.
+https://stackoverflow.com/questions/13932932/why-does-stdout-need-explicit-flushing-when-redirected-to-file#13933741
+https://man7.org/linux/man-pages/man3/setbuf.3.html
+
+多态类才能获得RTTI
+
+表达式的属性包括类型和值类型
+
+变量的属性包括类型，变量的类型包括左值引用和右值引用。
+
+左值引用只能用左值绑定
+左值常引用可以用左值或右值绑定
+右值引用只能用右值绑定
+右值常引用只能用右值绑定
+
+lvalue prvalue xvalue
+右值包括：prvalue xvalue
+
+关于字符串转换
+std::filesystem::create_directories(char*)需要 narrow to wide，依据的code page是std::locale::global，若std::locale::global没有设置，则依据系统的 code page
+std::cout 不需要转换
+std::wcout 需要 wide to narrow，依据的code page是std::locale::global，若std::locale::global没有设置，则依据std::locale().name()，（测试结果为C）
+
+对于std::cout 来说，locale::global(locale(".utf-8")) 能起到 SetConsoleOutputCP(CP_UTF8)的效果，使得控制台把cout输出的字节流解读为utf-8
+但std::cout.imbue(std::locale(".utf-8")) 不能起到这个作用
